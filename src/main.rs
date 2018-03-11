@@ -2,6 +2,7 @@ extern crate llvm_sys;
 
 use llvm_sys::core::*;
 use llvm_sys::analysis::{LLVMVerifyModule, LLVMVerifierFailureAction};
+use llvm_sys::execution_engine::LLVMCreateExecutionEngineForModule;
 use std::ffi::CString;
 use std::os::raw::{c_char};
 
@@ -35,12 +36,14 @@ fn main() {
     //builder.CreateStore(llvm.ConstInt(llvm.Int32Type(), 32, false), a)
     let a_name = CString::new("a").unwrap();
     let a = unsafe { LLVMBuildAlloca(builder, LLVMInt32Type(), a_name.as_ptr()) };
+    unsafe { LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), 32, 0), a); }
 
     // int b = 16
     //b := builder.CreateAlloca(llvm.Int32Type(), "b")
     //builder.CreateStore(llvm.ConstInt(llvm.Int32Type(), 16, false), b)
     let b_name = CString::new("b").unwrap();
     let b = unsafe { LLVMBuildAlloca(builder, LLVMInt32Type(), b_name.as_ptr()) };
+    unsafe { LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), 16, 0), b); }
 
     // return a + b
     //bVal := builder.CreateLoad(b, "b_val")
