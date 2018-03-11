@@ -62,13 +62,14 @@ fn main() {
     //if ok := llvm.VerifyModule(mod, llvm.ReturnStatusAction); ok != nil {
     //    fmt.Println(ok.Error())
     //}
+    let mut error: *mut c_char = 0 as *mut c_char;
     let ok = unsafe {
-        let mut error: *mut c_char = 0 as *mut c_char;
         let buf: *mut *mut c_char = &mut error;
         LLVMVerifyModule(module, LLVMVerifierFailureAction::LLVMReturnStatusAction, buf)
     };
     if ok != 0 {
-        panic!("cannot verify module '{:?}'", mod_name);
+        let err_msg = unsafe { CString::from_raw(error).into_string().unwrap() };
+        panic!("cannot verify module '{:?}'.\nError: {}", mod_name, err_msg);
     }
 
     // Clean up the builder now that we are finished using it.
@@ -77,9 +78,6 @@ fn main() {
     //mod.Dump()
     // Dump the LLVM IR to stdout so we can see what we've created
     unsafe { LLVMDumpModule(module) }
-
-    // Clean up the module after we're done with it.
-    unsafe { LLVMDisposeModule(module) }
 
 
 /* 
@@ -93,4 +91,7 @@ fn main() {
     funcResult := engine.RunFunction(mod.NamedFunction("main"), []llvm.GenericValue{})
     fmt.Printf("%d\n", funcResult.Int(false))
 */
+
+    // Clean up the module after we're done with it.
+    unsafe { LLVMDisposeModule(module) }
 }
