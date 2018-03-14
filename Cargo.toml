@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["JunSuzukiJapan <jun.suzuki.japan@gmail.com>"]
 
 [dependencies]
-llvm-sys = "50"
+llvm-sys = "60"
