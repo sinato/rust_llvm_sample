@@ -1,3 +1,4 @@
+extern crate rustc_llvm_proxy;
 extern crate llvm_sys;
 
 use llvm_sys::core::*;
