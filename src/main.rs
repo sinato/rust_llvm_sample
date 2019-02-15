@@ -7,6 +7,7 @@ use llvm_sys::analysis::{LLVMVerifyModule, LLVMVerifierFailureAction};
 use llvm_sys::execution_engine::*;
 use std::ffi::CString;
 use std::os::raw::{c_char};
+use std::env;
 
 /// Initialise LLVM
 ///
@@ -20,13 +21,15 @@ fn initialise_llvm() {
         if target::LLVM_InitializeNativeAsmPrinter() != 0 {
             panic!("Could not initialise ASM Printer");
         }
-    }    
+    }
 }
 
 fn main() {
     let llvm_error = 1;
-    let val1 = 32;
-    let val2 = 16;
+    let args: Vec<_> = env::args().collect();
+    let val1: u64 = args[1].parse().unwrap();
+    let val2: u64 = args[2].parse().unwrap();
+    println!("{:?} {:?}", val1, val2);
 
     initialise_llvm();
 

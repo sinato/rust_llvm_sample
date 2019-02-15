@@ -3,32 +3,37 @@
 import subprocess
 import sys
 
-def run():
-    subprocess.call('cargo run 2>temp', shell=True)
-    with open('./temp', 'r') as f:
-        res = f.read()
-    subprocess.call('rm temp', shell=True)
+def build():
+    subprocess.call('cargo build', shell=True)
 
-    # remove messages by cargo
-    ir = '\n'.join(res.split('\n')[4:-1])
+def test(args, expected):
+    command = ['./target/debug/llvm_test'] + args
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
 
+    ir = err.decode('utf-8')
     with open('./compiled.ll', 'w') as f:
         f.write(ir)
 
     subprocess.call('llvm-as compiled.ll', shell=True)
     p = subprocess.Popen('lli compiled.bc'.split(), stdout=subprocess.PIPE)
     streamdata = p.communicate()[0]
-    print(p.returncode)
 
+    print(f"{args} -> {p.returncode}")
+    assert p.returncode == expected
 
 def clean():
     subprocess.call('rm compiled*', shell=True)
-    
+
+def run():
+    build()
+    test(["10", "20"], 30)
+    # test(["111", "222"], 333)
+
 def main(command):
     if command == '--clean':
         clean()
     else:
-        print('run')
         run()
     
 
