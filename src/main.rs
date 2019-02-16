@@ -1,13 +1,13 @@
-extern crate rustc_llvm_proxy;
 extern crate llvm_sys;
+extern crate rustc_llvm_proxy;
 
+use llvm_sys::analysis::{LLVMVerifierFailureAction, LLVMVerifyModule};
 use llvm_sys::core::*;
-use llvm_sys::target;
-use llvm_sys::analysis::{LLVMVerifyModule, LLVMVerifierFailureAction};
 use llvm_sys::execution_engine::*;
-use std::ffi::CString;
-use std::os::raw::{c_char};
+use llvm_sys::target;
 use std::env;
+use std::ffi::CString;
+use std::os::raw::c_char;
 
 /// Initialise LLVM
 ///
@@ -41,23 +41,34 @@ fn main() {
     // create our function prologue
     let function_type = unsafe {
         let mut param_types = [];
-        LLVMFunctionType(LLVMInt32Type(), param_types.as_mut_ptr(), param_types.len() as u32, 0)
+        LLVMFunctionType(
+            LLVMInt32Type(),
+            param_types.as_mut_ptr(),
+            param_types.len() as u32,
+            0,
+        )
     };
     let function_name = CString::new("main").unwrap();
     let function = unsafe { LLVMAddFunction(module, function_name.as_ptr(), function_type) };
     let entry_name = CString::new("entry").unwrap();
     let entry_block = unsafe { LLVMAppendBasicBlock(function, entry_name.as_ptr()) };
-    unsafe { LLVMPositionBuilderAtEnd(builder, entry_block); }
+    unsafe {
+        LLVMPositionBuilderAtEnd(builder, entry_block);
+    }
 
     // int a = 32
     let a_name = CString::new("a").unwrap();
     let a = unsafe { LLVMBuildAlloca(builder, LLVMInt32Type(), a_name.as_ptr()) };
-    unsafe { LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), val1, 0), a); }
+    unsafe {
+        LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), val1, 0), a);
+    }
 
     // int b = 16
     let b_name = CString::new("b").unwrap();
     let b = unsafe { LLVMBuildAlloca(builder, LLVMInt32Type(), b_name.as_ptr()) };
-    unsafe { LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), val2, 0), b); }
+    unsafe {
+        LLVMBuildStore(builder, LLVMConstInt(LLVMInt32Type(), val2, 0), b);
+    }
 
     // return a + b
     let b_val_name = CString::new("b_val").unwrap();
@@ -74,7 +85,11 @@ fn main() {
     let mut error: *mut c_char = 0 as *mut c_char;
     let ok = unsafe {
         let buf: *mut *mut c_char = &mut error;
-        LLVMVerifyModule(module, LLVMVerifierFailureAction::LLVMReturnStatusAction, buf)
+        LLVMVerifyModule(
+            module,
+            LLVMVerifierFailureAction::LLVMReturnStatusAction,
+            buf,
+        )
     };
     if ok == llvm_error {
         let err_msg = unsafe { CString::from_raw(error).into_string().unwrap() };
@@ -100,14 +115,20 @@ fn main() {
     if ok == llvm_error {
         let err_msg = unsafe { CString::from_raw(error).into_string().unwrap() };
         println!("Execution error: {}", err_msg);
-
-    }else{
+    } else {
         // run the function!
         let func_name = CString::new("main").unwrap();
         let named_function = unsafe { LLVMGetNamedFunction(module, func_name.as_ptr()) };
         let mut params = [];
-        let func_result = unsafe { LLVMRunFunction(engine, named_function, params.len() as u32, params.as_mut_ptr()) };
-        let result = unsafe{ LLVMGenericValueToInt(func_result, 0) };
+        let func_result = unsafe {
+            LLVMRunFunction(
+                engine,
+                named_function,
+                params.len() as u32,
+                params.as_mut_ptr(),
+            )
+        };
+        let result = unsafe { LLVMGenericValueToInt(func_result, 0) };
         println!("{} + {} = {}", val1, val2, result);
     }
 
