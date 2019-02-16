@@ -1,2 +1,4 @@
 /target/
 **/*.rs.bk
+compiled*
+rusty-tags.vi
