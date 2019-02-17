@@ -10,13 +10,7 @@ def build():
 
 def test(args, expected):
     command = ["./target/debug/llvm_test"] + args
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
-
-    ir = err.decode("utf-8")
-    with open("./compiled.ll", "w") as f:
-        f.write(ir)
-
+    subprocess.call(command)
     subprocess.call("llvm-as compiled.ll", shell=True)
     p = subprocess.Popen("lli compiled.bc".split(), stdout=subprocess.PIPE)
     streamdata = p.communicate()[0]
